@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#111827">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<link rel="stylesheet" href="style.css">
+<title>MarketFeed</title>
+</head>
+<body>
+<header>
+  <div>
+    <h1>MarketFeed</h1>
+    <div class="sub">Your stock-market news reader</div>
+  </div>
+  <button id="refresh" class="icon">↻</button>
+</header>
+
+<nav class="tabs">
+  <button class="tab active" data-view="home">Home</button>
+  <button class="tab" data-view="portfolio">Portfolio</button>
+  <button class="tab" data-view="bundles">Bundles</button>
+  <button class="tab" data-view="feeds">Feeds</button>
+  <button class="tab" data-view="settings">Filters</button>
+</nav>
+
+<main id="app"></main>
+
+<dialog id="stockDialog">
+  <form method="dialog" id="stockForm">
+    <h2>Add portfolio stock</h2>
+    <label>Company / stock name<input id="stockName" required placeholder="Reliance Industries"></label>
+    <label>Keywords<input id="stockKeywords" placeholder="Reliance,RIL,Jio"></label>
+    <div class="actions"><button value="cancel">Cancel</button><button class="primary" value="default">Add stock</button></div>
+  </form>
+</dialog>
+
+<script src="app.js"></script>
+</body>
+</html>
