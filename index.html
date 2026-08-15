@@ -1,0 +1,23 @@
+<dialog id="feedDialog">
+  <form method="dialog" id="feedForm">
+    <h2>Add or Generate Feed</h2>
+    <label>Feed Name / Stock Ticker / Topic
+      <input id="feedName" required placeholder="e.g. KPIT, Moneycontrol, Nifty 50">
+    </label>
+    
+    <label>Feed URL (Auto-filled or Custom RSS)
+      <input id="feedUrl" type="url" placeholder="Auto-generated if left empty">
+    </label>
+    
+    <label>Bundle (Optional)
+      <select id="feedBundle">
+        <option value="">-- No Bundle (None) --</option>
+      </select>
+    </label>
+    
+    <div class="actions">
+      <button value="cancel">Cancel</button>
+      <button class="primary" value="default">Save Feed</button>
+    </div>
+  </form>
+</dialog>
