@@ -53,7 +53,7 @@ if(!d.ok)throw Error(d.error||"Feed error");
 return(d.items||[]).map(x=>({...x,feedId:f.id}))
 }
 
-function keywordURL(k){return"https://news.google.com/rss/search?q="+encodeURIComponent(k)+"&hl=en-IN&gl=IN&ceid=IN:en"}
+function keywordURL(k){return PROXY+"/news?q="+encodeURIComponent(k)}
 
 async function refreshFeed(f,show=true,knownItems=null){
 try{
