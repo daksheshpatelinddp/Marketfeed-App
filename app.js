@@ -41,7 +41,11 @@ try{
 }catch(e){
   throw Error("Cannot reach RSS proxy. Check that rssfeed.daksheshpatelin.workers.dev is deployed.");
 }
-if(!r.ok)throw Error("RSS proxy HTTP "+r.status);
+if(!r.ok){
+  let msg="";
+  try{let e=await r.json();msg=e.error||"";}catch(_){}
+  throw Error(msg||("RSS proxy HTTP "+r.status));
+}
 let d;
 try{ d=await r.json(); }
 catch(e){ throw Error("RSS proxy returned an invalid response."); }
@@ -51,9 +55,9 @@ return(d.items||[]).map(x=>({...x,feedId:f.id}))
 
 function keywordURL(k){return"https://news.google.com/rss/search?q="+encodeURIComponent(k)+"&hl=en-IN&gl=IN&ceid=IN:en"}
 
-async function refreshFeed(f,show=true){
+async function refreshFeed(f,show=true,knownItems=null){
 try{
-let a=await getFeed(f),m=new Map(S.articles.map(x=>[x.id,x]));
+let a=knownItems||await getFeed(f),m=new Map(S.articles.map(x=>[x.id,x]));
 a.forEach(x=>m.set(x.id,x));
 S.articles=[...m.values()].slice(0,4000);
 save();render();
@@ -99,11 +103,20 @@ $("newFeed").onclick=$("newFeed2").onclick=add;
 
 $("testFeed").onclick=async()=>{
 let u=$("url").value.trim()||keywordURL($("keyword").value.trim());
-if(!u)return $("testMsg").textContent="Enter a keyword or RSS URL";
+if(!$("url").value.trim()&&!$("keyword").value.trim())return $("testMsg").textContent="Enter a keyword or RSS URL";
+$("testFeed").disabled=true;
+$("testFeed").textContent="Testing…";
 try{
 let a=await getFeed({id:"test",url:u});
-$("testMsg").textContent="✓ Feed works — "+a.length+" stories found"
-}catch(e){$("testMsg").textContent="✕ "+e.message}
+window.lastTestFeed={url:u,items:a};
+$("testMsg").textContent="✓ Feed works — "+a.length+" stories found";
+}catch(e){
+window.lastTestFeed=null;
+$("testMsg").textContent="✕ "+e.message;
+}finally{
+$("testFeed").disabled=false;
+$("testFeed").textContent="Test feed";
+}
 };
 
 $("feedForm").onsubmit=async e=>{
@@ -112,14 +125,17 @@ let k=$("keyword").value.trim(),u=$("url").value.trim()||keywordURL(k);
 if(!k&&!$("url").value.trim())return toast("Enter keyword or RSS URL");
 if(S.feeds.some(f=>f.url===u))return toast("This feed already exists");
 let f={id:crypto.randomUUID(),name:$("fname").value.trim()||k||"RSS Feed",keyword:k,url:u};
+let tested=window.lastTestFeed;
+let knownItems=(tested&&tested.url===u)?tested.items:null;
 S.feeds.push(f);
 let b=S.bundles.find(x=>x.id===$("fBundle").value);
 if(b)b.feeds.push(f.id);
 save();
 feedDlg.close();
 renderFeeds();
-await refreshFeed(f,false);
-toast("Feed saved")
+await refreshFeed(f,false,knownItems);
+toast("Feed saved");
+window.lastTestFeed=null
 };
 
 $("newBundle").onclick=()=>$("bundleDlg").showModal();
