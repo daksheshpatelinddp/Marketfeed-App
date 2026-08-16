@@ -1,2 +1,240 @@
-:root{font-family:system-ui,-apple-system,Segoe UI,sans-serif;color:#111827;background:#f3f4f6}
-*{box-sizing:border-box}body{margin:0;padding-bottom:70px}header{background:#111827;color:white;padding:16px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:5}h1{margin:0;font-size:22px}.sub{font-size:12px;opacity:.7}.icon{font-size:25px;background:transparent;color:white;border:0}.tabs{display:flex;overflow:auto;background:white;border-bottom:1px solid #ddd;position:sticky;top:69px;z-index:4}.tab{flex:0 0 auto;border:0;background:white;padding:13px 15px}.tab.active{font-weight:700;border-bottom:3px solid #111827}main{padding:14px;max-width:850px;margin:auto}.toolbar{display:flex;gap:8px;margin-bottom:12px}.toolbar input{flex:1}.card,.feed,.stock,.bundle{background:white;border-radius:12px;padding:14px;margin:9px 0;box-shadow:0 1px 3px #0001}.card.read{opacity:.6}.title{font-weight:700;line-height:1.3}.meta{font-size:12px;color:#6b7280;margin:6px 0}.chips{display:flex;gap:6px;flex-wrap:wrap}.chip{font-size:11px;background:#e5e7eb;border-radius:20px;padding:4px 8px}.chip.star{background:#fef3c7;color:#92400e;font-weight:700}.chip.unread{background:#dbeafe;color:#1d4ed8;font-weight:700}.spin{animation:spin 1s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}.primary{background:#111827!important;color:white!important}.button{border:0;border-radius:8px;padding:9px 12px;background:#e5e7eb;font-size:13px}.danger{background:#fee2e2}.actions{display:flex;justify-content:flex-end;gap:8px;margin-top:15px}input,select{width:100%;padding:10px;border:1px solid #d1d5db;border-radius:8px;margin-top:5px;margin-bottom:10px}label{display:block;font-size:13px;font-weight:600}h2{margin-top:0}.empty{text-align:center;padding:35px;color:#6b7280}.row{display:flex;justify-content:space-between;align-items:center;gap:10px}.small{font-size:12px;color:#6b7280;font-weight:400}.hideuntil{color:#92400e;font-size:12px;margin:4px 0}a{color:inherit;text-decoration:none}.search{width:100%;margin-bottom:10px}.feedActions{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+body {
+  background-color: #0f172a;
+  color: #f8fafc;
+  padding-bottom: 90px;
+}
+
+.app-header {
+  background-color: #1e293b;
+  padding: 16px;
+  text-align: center;
+  border-bottom: 1px solid #334155;
+}
+
+.logo-title {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #38bdf8;
+}
+
+.search-section {
+  padding: 12px 16px;
+  background-color: #1e293b;
+  border-bottom: 1px solid #334155;
+}
+
+.search-box {
+  display: flex;
+  gap: 8px;
+}
+
+.search-box input {
+  flex: 1;
+  background-color: #0f172a;
+  border: 1px solid #475569;
+  color: #fff;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 0.95rem;
+}
+
+.search-box button {
+  background-color: #2563eb;
+  color: white;
+  border: none;
+  padding: 10px 18px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.content-container {
+  padding: 16px;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.preview-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.btn-back {
+  background: none;
+  border: none;
+  color: #38bdf8;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.badge {
+  background: #334155;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 0.8rem;
+}
+
+.article-card {
+  background-color: #1e293b;
+  padding: 14px;
+  border-radius: 10px;
+  margin-bottom: 12px;
+  border: 1px solid #334155;
+}
+
+.article-card h3 a {
+  color: #f1f5f9;
+  text-decoration: none;
+  font-size: 1rem;
+  line-height: 1.4;
+}
+
+.article-card p {
+  color: #94a3b8;
+  font-size: 0.85rem;
+  margin-top: 6px;
+  line-height: 1.3;
+}
+
+.article-meta {
+  margin-top: 8px;
+  font-size: 0.75rem;
+  color: #64748b;
+}
+
+.floating-save-bar {
+  position: fixed;
+  bottom: 70px;
+  left: 0;
+  right: 0;
+  padding: 12px;
+  background: rgba(15, 23, 42, 0.9);
+  backdrop-filter: blur(8px);
+  text-align: center;
+}
+
+.btn-save-feed {
+  width: 90%;
+  max-width: 400px;
+  background-color: #2563eb;
+  color: white;
+  padding: 12px;
+  border: none;
+  border-radius: 25px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.feeds-section-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 12px;
+  color: #cbd5e1;
+}
+
+.feed-list-item {
+  display: flex;
+  align-items: center;
+  background: #1e293b;
+  padding: 14px;
+  border-radius: 10px;
+  margin-bottom: 10px;
+  cursor: pointer;
+  border: 1px solid #334155;
+}
+
+.feed-icon {
+  font-size: 1.2rem;
+  margin-right: 12px;
+}
+
+.feed-details {
+  flex: 1;
+}
+
+.feed-details h4 {
+  font-size: 1rem;
+  color: #f8fafc;
+}
+
+.feed-details p {
+  font-size: 0.8rem;
+  color: #64748b;
+}
+
+.btn-delete {
+  background: none;
+  border: none;
+  color: #ef4444;
+  font-size: 1.1rem;
+  padding: 4px 8px;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 40px 20px;
+  color: #64748b;
+}
+
+.spinner-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(15, 23, 42, 0.85);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+}
+
+.hidden { display: none !important; }
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #334155;
+  border-top: 4px solid #2563eb;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 12px;
+}
+
+@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 60px;
+  background-color: #1e293b;
+  display: flex;
+  border-top: 1px solid #334155;
+}
+
+.nav-btn {
+  flex: 1;
+  background: none;
+  border: none;
+  color: #64748b;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  gap: 4px;
+}
+
+.nav-btn.active {
+  color: #38bdf8;
+}

@@ -1,0 +1,9 @@
+{
+  "short_name": "MarketFeed",
+  "name": "MarketFeed - Stock & News RSS Reader",
+  "icons": [],
+  "start_url": "./index.html",
+  "background_color": "#0f172a",
+  "theme_color": "#111827",
+  "display": "standalone"
+}
