@@ -13,4 +13,4 @@ Files:
 
 The PWA icon paths have been corrected to the repository root.
 The Cloudflare proxy URL is:
-https://rssfeed.daksheshpatelinddp.workers.dev
+https://rssfeed.daksheshpatelin.workers.dev

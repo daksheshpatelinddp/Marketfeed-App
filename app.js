@@ -1,4 +1,4 @@
-const PROXY="https://rssfeed.daksheshpatelinddp.workers.dev";
+const PROXY="https://rssfeed.daksheshpatelin.workers.dev";
 const KEY="marketfeed_v2";
 let S=JSON.parse(localStorage.getItem(KEY)||"null")||{feeds:[],bundles:[],articles:[],read:[],white:[],black:[],dedupe:true,unread:false,muted:{}},bundle="";
 const feedDlg=document.getElementById("feedDlg");
@@ -34,9 +34,17 @@ document.querySelectorAll("[data-h]").forEach(b=>b.onclick=()=>{let h=prompt("Hi
 }
 
 async function getFeed(f){
-let r=await fetch(PROXY+"/rss?url="+encodeURIComponent(f.url));
-if(!r.ok)throw Error("Proxy HTTP "+r.status);
-let d=await r.json();
+let endpoint=PROXY+"/rss?url="+encodeURIComponent(f.url);
+let r;
+try{
+  r=await fetch(endpoint,{cache:"no-store"});
+}catch(e){
+  throw Error("Cannot reach RSS proxy. Check that rssfeed.daksheshpatelin.workers.dev is deployed.");
+}
+if(!r.ok)throw Error("RSS proxy HTTP "+r.status);
+let d;
+try{ d=await r.json(); }
+catch(e){ throw Error("RSS proxy returned an invalid response."); }
 if(!d.ok)throw Error(d.error||"Feed error");
 return(d.items||[]).map(x=>({...x,feedId:f.id}))
 }
