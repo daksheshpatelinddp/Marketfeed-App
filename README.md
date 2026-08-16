@@ -1,0 +1,1 @@
+Upload all files to GitHub Pages. The Cloudflare proxy is configured in app.js. On Android Chrome use Add to Home screen.
