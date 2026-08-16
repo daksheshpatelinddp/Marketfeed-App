@@ -30,8 +30,7 @@ let a=list();
 $("status").textContent=a.length+" stories";
 $("articles").innerHTML=a.length?a.map(x=>`<article class="article ${S.read.includes(x.id)?"":"unread"}"><div class="source">${esc(name(x.feedId))}</div><div class="title"><a href="${esc(x.url||"#")}" target="_blank">${esc(x.title)}</a></div><p>${esc(x.description||"")}</p><div class="meta">${new Date(x.date).toLocaleString()}</div><div class="actions"><button class="small" data-r="${x.id}">${S.read.includes(x.id)?"Unread":"Read"}</button><button class="small" data-h="${x.feedId}">Hide feed</button></div></article>`).join(""):'<div class="empty">No matching stories.</div>';
 document.querySelectorAll("[data-r]").forEach(b=>b.onclick=()=>{let i=S.read.indexOf(b.dataset.r);i<0?S.read.push(b.dataset.r):S.read.splice(i,1);save();render()});
-document.querySelectorAll("[data-h]").forEach(b=>b.onclick=()=>{let h=prompt("Hide this feed for hours.
-Enter 0 for forever:","24");if(h!==null){let n=Number(h);S.muted[b.dataset.h]=n?Date.now()+n*3600000:"forever";save();render()}})
+document.querySelectorAll("[data-h]").forEach(b=>b.onclick=()=>{let h=prompt("Hide this feed for hours.\nEnter 0 for forever:","24");if(h!==null){let n=Number(h);S.muted[b.dataset.h]=n?Date.now()+n*3600000:"forever";save();render()}})
 }
 
 async function getFeed(f){
@@ -55,8 +54,7 @@ if(show)toast("Feed refreshed")
 }
 
 function renderFeeds(){
-$("feeds").innerHTML=S.feeds.length?S.feeds.map(f=>`<div class="card"><b>${esc(f.name)}</b><p>${esc(f.keyword||f.url)}</p><button class="small" data-rf="${f.id}">Refresh</button> <button class="small" data-df="${f.id}">Delete</button></div>`).join(""):'<div class="empty">No feeds.
-Create one from a keyword or RSS URL.</div>';
+$("feeds").innerHTML=S.feeds.length?S.feeds.map(f=>`<div class="card"><b>${esc(f.name)}</b><p>${esc(f.keyword||f.url)}</p><button class="small" data-rf="${f.id}">Refresh</button> <button class="small" data-df="${f.id}">Delete</button></div>`).join(""):'<div class="empty">No feeds.<br>Create one from a keyword or RSS URL.</div>';
 document.querySelectorAll("[data-rf]").forEach(b=>b.onclick=()=>refreshFeed(S.feeds.find(f=>f.id===b.dataset.rf)));
 document.querySelectorAll("[data-df]").forEach(b=>b.onclick=()=>{if(confirm("Delete this feed?")){S.feeds=S.feeds.filter(f=>f.id!==b.dataset.df);S.articles=S.articles.filter(a=>a.feedId!==b.dataset.df);S.bundles.forEach(x=>x.feeds=x.feeds.filter(id=>id!==b.dataset.df));save();renderFeeds();render()}})
 }
