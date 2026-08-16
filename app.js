@@ -1,6 +1,8 @@
 const PROXY="https://rssfeed.daksheshpatelinddp.workers.dev";
 const KEY="marketfeed_v2";
 let S=JSON.parse(localStorage.getItem(KEY)||"null")||{feeds:[],bundles:[],articles:[],read:[],white:[],black:[],dedupe:true,unread:false,muted:{}},bundle="";
+const feedDlg=document.getElementById("feedDlg");
+const bundleDlg=document.getElementById("bundleDlg");
 const $=id=>document.getElementById(id);
 const save=()=>localStorage.setItem(KEY,JSON.stringify(S));
 const esc=x=>String(x??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
@@ -84,7 +86,7 @@ let s=$("fBundle");
 s.innerHTML='<option value="">No bundle</option>'+S.bundles.map(b=>`<option value="${b.id}">${esc(b.name)}</option>`).join("");
 $("feedForm").reset();
 $("testMsg").textContent="";
-feedDlg.showModal()
+if(typeof feedDlg.showModal==="function")feedDlg.showModal();else feedDlg.setAttribute("open","")
 }
 
 $("newFeed").onclick=$("newFeed2").onclick=add;
@@ -157,3 +159,5 @@ document.querySelectorAll("nav button").forEach(b=>b.onclick=()=>page(b.dataset.
 render();renderFeeds();renderBundles();
 
 if("serviceWorker"in navigator)navigator.serviceWorker.register("service-worker.js");
+
+window.addEventListener("error",e=>{const el=document.getElementById("status");if(el)el.textContent="App error: "+(e.message||"Unknown JavaScript error");console.error(e.error||e.message);});

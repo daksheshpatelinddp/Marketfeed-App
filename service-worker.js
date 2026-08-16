@@ -1,4 +1,4 @@
-const C="marketfeed-v2";
+const C="marketfeed-v3";
 const A=[
   "./",
   "./index.html",
