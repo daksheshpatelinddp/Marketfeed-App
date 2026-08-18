@@ -308,7 +308,17 @@ $("saveFilter").onclick = saveFilter;
 $("export").onclick = () => { const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([JSON.stringify(S, null, 2)], {type:"application/json"})); a.download = "marketfeed-backup.json"; a.click(); };
 $("reset").onclick = () => { if (confirm("Reset MarketFeed?")) { localStorage.removeItem(KEY); location.reload(); } };
 
-document.querySelectorAll("nav button").forEach(b => b.onclick = () => { if (b.dataset.p === "home") { activeFeed = ""; bundle = ""; } page(b.dataset.p); });
+document.querySelectorAll("nav button").forEach(b => {
+  b.type = "button";
+  b.addEventListener("click", (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const target = b.dataset.p;
+    if (!target || !$(target)) return;
+    if (target === "home") { activeFeed = ""; bundle = ""; }
+    page(target);
+  });
+});
 
 render(); renderFeeds(); renderBundles(); renderFilterManager();
 if ("serviceWorker" in navigator) navigator.serviceWorker.register("service-worker.js?v=8");

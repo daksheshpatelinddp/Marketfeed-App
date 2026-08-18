@@ -5,7 +5,7 @@ header button{margin-left:auto;background:transparent;font-size:25px}
 .logo{background:#1769ff;border-radius:10px;padding:8px 12px;font-size:20px;font-weight:bold}
 header b{font-size:18px}header small{display:block;color:#aeb8ca}
 main{max-width:900px;margin:auto;padding:15px}
-.page{display:none}.active{display:block}
+.page{display:none}.page.active{display:block}
 .top{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:15px}
 h1,h2{margin:0 0 5px}p{color:#697386;margin:4px 0 10px}
 input,textarea,select{width:100%;padding:11px;border:1px solid #dce3ee;border-radius:9px;background:#fff}
