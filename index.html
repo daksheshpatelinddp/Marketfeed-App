@@ -3,10 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>MarketFeed - Stock RSS Creator & Filter Engine</title>
-  <link rel="manifest" href="manifest.json">
+  <title>MarketFeed - Stock RSS Hub</title>
   <link rel="stylesheet" href="style.css">
-  <meta name="theme-color" content="#0f172a">
 </head>
 <body>
   <header class="app-header">
@@ -33,7 +31,7 @@
 
     <section class="filter-bar">
       <div class="search-box">
-        <input type="text" id="feed-search" placeholder="Search ticker, company, or keyword (e.g. $RELIANCE)...">
+        <input type="text" id="feed-search" placeholder="Search ticker, company, or keyword...">
       </div>
       <div class="filter-pills" id="bundle-pills-container"></div>
       <div class="sort-box">
@@ -45,7 +43,7 @@
     </section>
 
     <div class="content-grid">
-      <aside class="sidebar" id="sidebar">
+      <aside class="sidebar">
         <div class="sidebar-section">
           <h3>My Feeds</h3>
           <ul id="feed-list" class="sidebar-list"></ul>
@@ -70,22 +68,15 @@
   <div id="feed-modal" class="modal hidden">
     <div class="modal-content">
       <span class="close-modal">&times;</span>
-      <h3>⚡ Create Stock RSS Feed</h3>
+      <h3>⚡ Create Stock Feed</h3>
       <form id="feed-form">
         <div class="form-group">
           <label>Feed Name / Ticker</label>
-          <input type="text" id="feed-name-input" placeholder="e.g. Reliance Industries or $TATA" required>
+          <input type="text" id="feed-name-input" placeholder="e.g. KPIT Tech or $RELIANCE" required>
         </div>
         <div class="form-group">
-          <label>Feed Source Type</label>
-          <select id="feed-type-select" class="select-input full-width">
-            <option value="keyword">Keyword Search (Auto-Generates Google News RSS)</option>
-            <option value="rss">Custom RSS / XML URL</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label>Keyword Query or RSS URL</label>
-          <input type="text" id="feed-url-input" placeholder="e.g. RELIANCE stock OR https://..." required>
+          <label>Search Term or Query</label>
+          <input type="text" id="feed-url-input" placeholder="e.g. KPIT Technologies stock" required>
         </div>
         <div class="form-group">
           <label>Assign to Bundle (Optional)</label>
@@ -94,9 +85,9 @@
           </select>
         </div>
         <div class="form-group checkbox-group">
-          <label><input type="checkbox" id="feed-alert-toggle" checked> Send Mobile & Sound Alerts for this Feed</label>
+          <label><input type="checkbox" id="feed-alert-toggle" checked> Enable Alerts for this Feed</label>
         </div>
-        <button type="submit" class="btn btn-primary full-width">Create & Fetch Articles</button>
+        <button type="submit" class="btn btn-primary full-width">Create & Fetch News</button>
       </form>
     </div>
   </div>
@@ -105,14 +96,14 @@
   <div id="bundle-modal" class="modal hidden">
     <div class="modal-content">
       <span class="close-modal">&times;</span>
-      <h3>📦 Create Feed Bundle</h3>
+      <h3>📦 Create Bundle</h3>
       <form id="bundle-form">
         <div class="form-group">
           <label>Bundle Name</label>
-          <input type="text" id="bundle-name-input" placeholder="e.g. Banking Stocks, Sector Focus" required>
+          <input type="text" id="bundle-name-input" placeholder="e.g. Tech Stocks, Banking" required>
         </div>
         <div class="form-group checkbox-group">
-          <label><input type="checkbox" id="bundle-alert-toggle" checked> Send Mobile & Sound Alerts for this Bundle</label>
+          <label><input type="checkbox" id="bundle-alert-toggle" checked> Enable Bundle Alerts</label>
         </div>
         <button type="submit" class="btn btn-primary full-width">Save Bundle</button>
       </form>
