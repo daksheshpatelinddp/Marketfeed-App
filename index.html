@@ -3,61 +3,39 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>MarketFeed - Stock RSS Creator & Reader</title>
+  <title>MarketFeed - Stock RSS Creator & Filter Engine</title>
   <link rel="manifest" href="manifest.json">
   <link rel="stylesheet" href="style.css">
   <meta name="theme-color" content="#0f172a">
 </head>
 <body>
-  <!-- Header -->
   <header class="app-header">
     <div class="logo-container">
       <span class="logo-icon">📈</span>
       <h1>MarketFeed</h1>
     </div>
     <div class="header-actions">
-      <button id="notification-btn" class="btn btn-icon" title="Notification Settings">
-        🔔 <span id="notif-badge" class="badge hidden"></span>
-      </button>
       <button id="refresh-now-btn" class="btn btn-secondary">🔄 Refresh</button>
-      <button id="add-feed-btn" class="btn btn-primary">+ New Feed</button>
+      <button id="add-bundle-btn" class="btn btn-secondary">+ New Bundle</button>
+      <button id="add-feed-btn" class="btn btn-primary">⚡ Create Feed</button>
     </div>
   </header>
 
-  <!-- Main Container -->
   <main class="app-container">
-    
-    <!-- Top Bar: rss.app Style Navigation & Filter Tabs -->
     <nav class="rss-tab-nav">
       <div class="tab-group">
-        <button class="tab-btn active" data-tab="all">All Feeds</button>
+        <button class="tab-btn active" data-tab="news">📰 News / Stream</button>
+        <button class="tab-btn" data-tab="feeds">📡 Feeds</button>
         <button class="tab-btn" data-tab="bundles">📦 Bundles</button>
-        <button class="tab-btn" data-tab="filters">🔍 Saved Filters</button>
-      </div>
-
-      <!-- Controls & Auto-Refresh Options -->
-      <div class="tab-controls">
-        <label for="auto-refresh-select" class="control-label">Auto-Refresh:</label>
-        <select id="auto-refresh-select" class="select-input">
-          <option value="0">Off</option>
-          <option value="1" selected>Every 1 Min</option>
-          <option value="5">Every 5 Mins</option>
-          <option value="15">Every 15 Mins</option>
-        </select>
+        <button class="tab-btn" data-tab="filters">🔍 RSS.app Filters</button>
       </div>
     </nav>
 
-    <!-- Sub-Filter Bar (Search, Tickers, Sorting) -->
     <section class="filter-bar">
       <div class="search-box">
         <input type="text" id="feed-search" placeholder="Search ticker, company, or keyword (e.g. $RELIANCE)...">
       </div>
-      
-      <div class="filter-pills" id="bundle-pills-container">
-        <button class="pill-btn active" data-filter="all">All</button>
-        <!-- Dynamic Bundle and Ticker Pills will render here -->
-      </div>
-
+      <div class="filter-pills" id="bundle-pills-container"></div>
       <div class="sort-box">
         <select id="sort-select" class="select-input">
           <option value="newest">Newest First</option>
@@ -66,62 +44,75 @@
       </div>
     </section>
 
-    <!-- Content Layout -->
     <div class="content-grid">
-      
-      <!-- Sidebar Navigation for Feeds/Bundles -->
       <aside class="sidebar" id="sidebar">
         <div class="sidebar-section">
           <h3>My Feeds</h3>
           <ul id="feed-list" class="sidebar-list"></ul>
         </div>
-        
         <div class="sidebar-section">
           <h3>My Bundles</h3>
           <ul id="bundle-list" class="sidebar-list"></ul>
         </div>
       </aside>
 
-      <!-- Main Feed Items Stream -->
-      <section class="feed-stream">
+      <section class="feed-stream" id="main-view-container">
         <div id="stream-header" class="stream-header">
           <h2 id="stream-title">All Updates</h2>
           <span id="unread-count" class="counter">0 items</span>
         </div>
-
-        <div id="feed-items-container" class="feed-cards-grid">
-          <!-- Feed cards dynamically injected here -->
-        </div>
+        <div id="feed-items-container" class="feed-cards-grid"></div>
       </section>
-
     </div>
   </main>
 
-  <!-- Modal: Add/Edit Feed & Bundle Alerts -->
+  <!-- MODAL 1: RSS Feed Creator -->
   <div id="feed-modal" class="modal hidden">
     <div class="modal-content">
       <span class="close-modal">&times;</span>
-      <h3 id="modal-title">Add Stock RSS Feed</h3>
+      <h3>⚡ Create Stock RSS Feed</h3>
       <form id="feed-form">
         <div class="form-group">
-          <label>Feed Name / Ticker</label>
-          <input type="text" id="feed-name-input" placeholder="e.g. Nifty 50 News" required>
+          <label>Feed Name / Stock Ticker</label>
+          <input type="text" id="feed-name-input" placeholder="e.g. Reliance Industries or $TATA" required>
         </div>
         <div class="form-group">
-          <label>URL / Source Query</label>
-          <input type="url" id="feed-url-input" placeholder="https://..." required>
+          <label>Source Type</label>
+          <select id="feed-type-select" class="select-input full-width">
+            <option value="keyword">Keyword / Stock Ticker Search (Auto-Generate Feed)</option>
+            <option value="rss">Custom RSS / XML URL</option>
+          </select>
+        </div>
+        <div class="form-group" id="url-group">
+          <label>Target Query or Custom RSS URL</label>
+          <input type="text" id="feed-url-input" placeholder="e.g. RELIANCE stock market news" required>
         </div>
         <div class="form-group">
           <label>Assign to Bundle</label>
-          <input type="text" id="feed-bundle-input" placeholder="e.g. Banking, Stocks, Crypto">
+          <input type="text" id="feed-bundle-input" placeholder="e.g. Stocks, Indices, Crypto">
         </div>
         <div class="form-group checkbox-group">
-          <label>
-            <input type="checkbox" id="feed-alert-toggle" checked>
-            Send Mobile Alert on New Posts
-          </label>
+          <label><input type="checkbox" id="feed-alert-toggle" checked> Send Mobile & Sound Alerts</label>
         </div>
-        <button type="submit" class="btn btn-primary full-width">Save Feed</button>
+        <button type="submit" class="btn btn-primary full-width">Create & Build Feed</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL 2: Create Bundle -->
+  <div id="bundle-modal" class="modal hidden">
+    <div class="modal-content">
+      <span class="close-modal">&times;</span>
+      <h3>📦 Create Feed Bundle</h3>
+      <form id="bundle-form">
+        <div class="form-group">
+          <label>Bundle Name</label>
+          <input type="text" id="bundle-name-input" placeholder="e.g. Banking Stocks, Tech Sector" required>
+        </div>
+        <div class="form-group checkbox-group">
+          <label><input type="checkbox" id="bundle-alert-toggle" checked> Enable Bundle Alerts</label>
+        </div>
+        <button type="submit" class="btn btn-primary full-width">Save Bundle</button>
       </form>
     </div>
   </div>

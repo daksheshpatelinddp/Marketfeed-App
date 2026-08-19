@@ -1,36 +1,22 @@
 /**
- * MarketFeed - Complete Application Script
- * Features: Mobile Tab Navigation, RSS.app Filtering Engine, Selective Alerts, & Modals
+ * MarketFeed - RSS Creator, Bundle Builder & RSS.app Filter Engine
  */
 
-// Global Application State
 let state = {
   feeds: JSON.parse(localStorage.getItem('mf_feeds')) || [
     {
       id: '1',
-      name: 'Nifty 50 News',
-      url: 'https://news.google.com/rss/search?q=Nifty50',
-      bundle: 'Indices',
+      name: '$RELIANCE Updates',
+      type: 'keyword',
+      query: 'RELIANCE stock news',
+      bundle: 'Stocks',
       alerts: true,
-      filters: {
-        whitelist: ['nifty', 'market', 'stock'],
-        blacklist: ['crypto'],
-        matchField: 'all',
-        matchMode: 'OR',
-        hideNoImage: false,
-        hideNoDescription: false,
-        hideOlderThanHours: 48,
-        blockedDomains: []
-      }
+      filters: { whitelist: ['reliance', 'profit', 'quarter'], blacklist: ['crypto'], matchField: 'all', matchMode: 'OR' }
     }
   ],
   bundles: JSON.parse(localStorage.getItem('mf_bundles')) || [
-    {
-      id: 'b1',
-      name: 'Indices',
-      alerts: true,
-      filters: { whitelist: [], blacklist: [] }
-    }
+    { id: 'b1', name: 'Stocks', alerts: true, filters: { whitelist: [], blacklist: [] } },
+    { id: 'b2', name: 'Indices', alerts: true, filters: { whitelist: [], blacklist: [] } }
   ],
   items: JSON.parse(localStorage.getItem('mf_items')) || [],
   activeTab: 'news',
@@ -45,7 +31,7 @@ let state = {
   timerId: null
 };
 
-// Initialize Application on DOM Ready
+// Application Initialization
 document.addEventListener('DOMContentLoaded', () => {
   initServiceWorker();
   initNotificationPermission();
@@ -55,30 +41,31 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 /* ==========================================================================
-   1. NAVIGATION & MODAL EVENT LISTENERS (Fixes Unresponsive Buttons)
+   1. EVENT LISTENERS & MODAL HANDLERS
    ========================================================================== */
 
 function setupEventListeners() {
-  // Modal Elements
   const feedModal = document.getElementById('feed-modal');
-  const addFeedBtn = document.getElementById('add-feed-btn');
-  const closeModalBtns = document.querySelectorAll('.close-modal');
+  const bundleModal = document.getElementById('bundle-modal');
 
-  // Open "New Feed" Modal
-  if (addFeedBtn && feedModal) {
-    addFeedBtn.addEventListener('click', () => {
-      feedModal.classList.remove('hidden');
-    });
-  }
+  // Open "Create Feed" Modal
+  document.getElementById('add-feed-btn')?.addEventListener('click', () => {
+    feedModal?.classList.remove('hidden');
+  });
+
+  // Open "Create Bundle" Modal
+  document.getElementById('add-bundle-btn')?.addEventListener('click', () => {
+    bundleModal?.classList.remove('hidden');
+  });
 
   // Close Modals
-  closeModalBtns.forEach(btn => {
+  document.querySelectorAll('.close-modal').forEach(btn => {
     btn.addEventListener('click', () => {
       document.querySelectorAll('.modal').forEach(m => m.classList.add('hidden'));
     });
   });
 
-  // Top/Mobile Navigation Tabs (News, Feeds, Bundles, Filters)
+  // Main Navigation Tabs
   document.querySelectorAll('.tab-btn').forEach(btn => {
     btn.addEventListener('click', (e) => {
       document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -89,97 +76,117 @@ function setupEventListeners() {
     });
   });
 
-  // Filter Pills (Bundles & Categories)
-  const bundlePillsContainer = document.getElementById('bundle-pills-container');
-  if (bundlePillsContainer) {
-    bundlePillsContainer.addEventListener('click', (e) => {
-      if (e.target.classList.contains('pill-btn')) {
-        document.querySelectorAll('.pill-btn').forEach(p => p.classList.remove('active'));
-        e.target.classList.add('active');
-        state.activeFilter = e.target.dataset.filter;
-        renderStream();
-      }
-    });
-  }
+  // Bundle Category Pills
+  document.getElementById('bundle-pills-container')?.addEventListener('click', (e) => {
+    if (e.target.classList.contains('pill-btn')) {
+      document.querySelectorAll('.pill-btn').forEach(p => p.classList.remove('active'));
+      e.target.classList.add('active');
+      state.activeFilter = e.target.dataset.filter;
+      if (state.activeTab === 'news') renderStream();
+    }
+  });
 
-  // Search Input Handler
-  const searchInput = document.getElementById('feed-search');
-  if (searchInput) {
-    searchInput.addEventListener('input', (e) => {
-      state.searchQuery = e.target.value;
-      renderStream();
-    });
-  }
+  // Search & Sorting
+  document.getElementById('feed-search')?.addEventListener('input', (e) => {
+    state.searchQuery = e.target.value;
+    if (state.activeTab === 'news') renderStream();
+  });
 
-  // Sort Order Selector
-  const sortSelect = document.getElementById('sort-select');
-  if (sortSelect) {
-    sortSelect.addEventListener('change', (e) => {
-      state.sortOrder = e.target.value;
-      renderStream();
-    });
-  }
+  document.getElementById('sort-select')?.addEventListener('change', (e) => {
+    state.sortOrder = e.target.value;
+    if (state.activeTab === 'news') renderStream();
+  });
 
-  // Refresh Button
-  const refreshBtn = document.getElementById('refresh-now-btn');
-  if (refreshBtn) {
-    refreshBtn.addEventListener('click', () => refreshFeeds());
-  }
+  document.getElementById('refresh-now-btn')?.addEventListener('click', () => refreshFeeds());
 
-  // New Feed Form Submission
-  const feedForm = document.getElementById('feed-form');
-  if (feedForm) {
-    feedForm.addEventListener('submit', (e) => {
-      e.preventDefault();
-      const nameInput = document.getElementById('feed-name-input');
-      const urlInput = document.getElementById('feed-url-input');
-      const bundleInput = document.getElementById('feed-bundle-input');
-      const alertsToggle = document.getElementById('feed-alert-toggle');
+  // Handle RSS Feed Creation
+  document.getElementById('feed-form')?.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const name = document.getElementById('feed-name-input').value;
+    const type = document.getElementById('feed-type-select').value;
+    const inputQuery = document.getElementById('feed-url-input').value;
+    const bundleName = document.getElementById('feed-bundle-input').value || 'General';
+    const alerts = document.getElementById('feed-alert-toggle').checked;
 
-      const newFeed = {
-        id: Date.now().toString(),
-        name: nameInput ? nameInput.value : 'New Feed',
-        url: urlInput ? urlInput.value : '#',
-        bundle: bundleInput && bundleInput.value ? bundleInput.value : 'General',
-        alerts: alertsToggle ? alertsToggle.checked : true,
+    // Convert Query or Keyword into a RSS Feed URL
+    const generatedUrl = type === 'keyword' 
+      ? `https://news.google.com/rss/search?q=${encodeURIComponent(inputQuery)}`
+      : inputQuery;
+
+    const newFeed = {
+      id: Date.now().toString(),
+      name: name,
+      type: type,
+      query: inputQuery,
+      url: generatedUrl,
+      bundle: bundleName,
+      alerts: alerts,
+      filters: { whitelist: [], blacklist: [], matchField: 'all', matchMode: 'OR' }
+    };
+
+    state.feeds.push(newFeed);
+
+    // Auto-create Bundle if missing
+    if (bundleName && !state.bundles.some(b => b.name.toLowerCase() === bundleName.toLowerCase())) {
+      state.bundles.push({ id: 'b_' + Date.now(), name: bundleName, alerts: true, filters: { whitelist: [], blacklist: [] } });
+    }
+
+    saveState();
+    renderAllViews();
+    feedModal.classList.add('hidden');
+    e.target.reset();
+  });
+
+  // Handle Bundle Creation
+  document.getElementById('bundle-form')?.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const bundleName = document.getElementById('bundle-name-input').value;
+    const alerts = document.getElementById('bundle-alert-toggle').checked;
+
+    if (bundleName) {
+      state.bundles.push({
+        id: 'b_' + Date.now(),
+        name: bundleName,
+        alerts: alerts,
         filters: { whitelist: [], blacklist: [] }
-      };
-
-      state.feeds.push(newFeed);
-      localStorage.setItem('mf_feeds', JSON.stringify(state.feeds));
-      
+      });
+      saveState();
       renderAllViews();
-      if (feedModal) feedModal.classList.add('hidden');
-      feedForm.reset();
-    });
-  }
+      bundleModal.classList.add('hidden');
+      e.target.reset();
+    }
+  });
 }
 
 /* ==========================================================================
-   2. VIEW RENDERING & SWITCHING
+   2. VIEW CONTROLLER & TAB SWITCHING
    ========================================================================== */
 
 function switchTab(tabName) {
-  const sidebar = document.getElementById('sidebar');
-  const feedStream = document.querySelector('.feed-stream');
-  
-  if (tabName === 'news' || tabName === 'all') {
-    if (sidebar) sidebar.style.display = 'block';
-    if (feedStream) feedStream.style.display = 'block';
+  const container = document.getElementById('main-view-container');
+  if (!container) return;
+
+  if (tabName === 'news') {
+    container.innerHTML = `
+      <div id="stream-header" class="stream-header">
+        <h2 id="stream-title">All Updates</h2>
+        <span id="unread-count" class="counter">0 items</span>
+      </div>
+      <div id="feed-items-container" class="feed-cards-grid"></div>`;
     renderStream();
   } else if (tabName === 'feeds') {
-    renderFeedsPage();
+    renderFeedsPage(container);
   } else if (tabName === 'bundles') {
-    renderBundlesPage();
+    renderBundlesPage(container);
   } else if (tabName === 'filters') {
-    renderFiltersPage();
+    renderFiltersPage(container);
   }
 }
 
 function renderAllViews() {
   renderBundlesPills();
   renderSidebarLists();
-  renderStream();
+  if (state.activeTab === 'news') renderStream();
 }
 
 function renderBundlesPills() {
@@ -195,6 +202,8 @@ function renderBundlesPills() {
 
 function renderSidebarLists() {
   const feedList = document.getElementById('feed-list');
+  const bundleList = document.getElementById('bundle-list');
+
   if (feedList) {
     feedList.innerHTML = state.feeds.map(f => `
       <li data-id="${f.id}">
@@ -203,54 +212,120 @@ function renderSidebarLists() {
       </li>
     `).join('');
   }
+
+  if (bundleList) {
+    bundleList.innerHTML = state.bundles.map(b => `
+      <li data-id="${b.id}">
+        <span>📦 ${b.name}</span>
+        <small>${b.alerts ? '🔔' : ''}</small>
+      </li>
+    `).join('');
+  }
 }
+
+/* ==========================================================================
+   3. TAB PAGE RENDERERS (Feeds, Bundles, RSS.app Filters)
+   ========================================================================== */
+
+function renderFeedsPage(container) {
+  container.innerHTML = `
+    <div class="view-panel">
+      <h2>📡 Created & Managed RSS Feeds</h2>
+      <div class="cards-list">
+        ${state.feeds.map(f => `
+          <div class="card-item" style="background:var(--bg-secondary); padding:1rem; border-radius:8px; margin-bottom:1rem; border:1px solid var(--border-color);">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <h4>${f.name} <small style="color:var(--text-muted);">(${f.bundle || 'General'})</small></h4>
+              <button class="btn btn-secondary" onclick="toggleFeedAlert('${f.id}')">${f.alerts ? '🔔 Alerts On' : '🔕 Alerts Off'}</button>
+            </div>
+            <p style="font-size:0.85rem; color:var(--text-muted); margin-top:0.5rem;">Source: ${f.url}</p>
+          </div>
+        `).join('')}
+      </div>
+    </div>`;
+}
+
+function renderBundlesPage(container) {
+  container.innerHTML = `
+    <div class="view-panel">
+      <h2>📦 Custom Feed Bundles</h2>
+      <div class="cards-list">
+        ${state.bundles.map(b => `
+          <div class="card-item" style="background:var(--bg-secondary); padding:1rem; border-radius:8px; margin-bottom:1rem; border:1px solid var(--border-color);">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <h4>📦 ${b.name}</h4>
+              <button class="btn btn-secondary" onclick="toggleBundleAlert('${b.id}')">${b.alerts ? '🔔 Alerts On' : '🔕 Alerts Off'}</button>
+            </div>
+            <p style="font-size:0.85rem; color:var(--text-muted); margin-top:0.5rem;">
+              Assigned Feeds: ${state.feeds.filter(f => f.bundle === b.name).map(f => f.name).join(', ') || 'None'}
+            </p>
+          </div>
+        `).join('')}
+      </div>
+    </div>`;
+}
+
+function renderFiltersPage(container) {
+  container.innerHTML = `
+    <div class="view-panel">
+      <h2>🔍 RSS.app Filter Rules Manager</h2>
+      <p style="color:var(--text-muted); margin-bottom:1rem;">Configure Whitelists, Blacklists, and Content rules for specific feeds.</p>
+      ${state.feeds.map(f => `
+        <div class="filter-card" style="background:var(--bg-secondary); padding:1rem; border-radius:8px; margin-bottom:1rem; border:1px solid var(--border-color);">
+          <h4>Feed: ${f.name}</h4>
+          <div style="display:grid; grid-template-columns: 1fr 1fr; gap:1rem; margin-top:0.75rem;">
+            <div>
+              <label style="font-size:0.8rem;">Whitelist Keywords (comma separated)</label>
+              <input type="text" class="select-input full-width" value="${(f.filters?.whitelist || []).join(', ')}" onchange="updateFeedFilter('${f.id}', 'whitelist', this.value)">
+            </div>
+            <div>
+              <label style="font-size:0.8rem;">Blacklist Keywords (comma separated)</label>
+              <input type="text" class="select-input full-width" value="${(f.filters?.blacklist || []).join(', ')}" onchange="updateFeedFilter('${f.id}', 'blacklist', this.value)">
+            </div>
+          </div>
+        </div>
+      `).join('')}
+    </div>`;
+}
+
+/* ==========================================================================
+   4. RSS.APP STREAM & FILTER EVALUATOR
+   ========================================================================== */
 
 function renderStream() {
   const container = document.getElementById('feed-items-container');
   if (!container) return;
 
-  // Process raw items through the RSS.app filter pipeline
   let processed = state.items.filter(item => {
     const feed = state.feeds.find(f => f.id === item.feedId) || {};
     const bundle = state.bundles.find(b => b.name === feed.bundle) || null;
-    return passesRssAppFilters(item, feed.filters || {}) && 
-           (!bundle || passesRssAppFilters(item, bundle.filters || {}));
+    return passesRssAppFilters(item, feed.filters) && (!bundle || passesRssAppFilters(item, bundle.filters));
   });
 
-  // Apply Bundle/Category Pill Filter
   if (state.activeFilter !== 'all') {
     const validFeedIds = state.feeds.filter(f => f.bundle === state.activeFilter).map(f => f.id);
     processed = processed.filter(item => validFeedIds.includes(item.feedId));
   }
 
-  // Apply Search Keyword Filter
   if (state.searchQuery) {
     const q = state.searchQuery.toLowerCase();
-    processed = processed.filter(i => 
-      (i.title && i.title.toLowerCase().includes(q)) || 
-      (i.snippet && i.snippet.toLowerCase().includes(q))
-    );
+    processed = processed.filter(i => (i.title && i.title.toLowerCase().includes(q)) || (i.snippet && i.snippet.toLowerCase().includes(q)));
   }
 
-  // Apply Sorting
-  processed.sort((a, b) => {
-    return state.sortOrder === 'newest' 
-      ? new Date(b.date) - new Date(a.date) 
-      : new Date(a.date) - new Date(b.date);
-  });
+  processed.sort((a, b) => state.sortOrder === 'newest' ? new Date(b.date) - new Date(a.date) : new Date(a.date) - new Date(b.date));
 
   const unreadCount = document.getElementById('unread-count');
   if (unreadCount) unreadCount.innerText = `${processed.length} items`;
 
   if (processed.length === 0) {
-    container.innerHTML = `<p style="grid-column: 1/-1; text-align: center; color: var(--text-muted, #94a3b8); padding: 2rem;">No items found matching your filters.</p>`;
+    container.innerHTML = `<p style="grid-column: 1/-1; text-align: center; color: var(--text-muted); padding: 2rem;">No news articles match your filter rules.</p>`;
     return;
   }
 
   container.innerHTML = processed.map(item => `
     <article class="feed-card">
       <div>
-        <h4><a href="${item.link}" target="_blank" rel="noopener">${cleanArticleTitle(item.title)}</a></h4>
+        <h4><a href="${item.link}" target="_blank">${cleanArticleTitle(item.title)}</a></h4>
         <p>${item.snippet || ''}</p>
       </div>
       <div class="feed-meta">
@@ -261,151 +336,89 @@ function renderStream() {
   `).join('');
 }
 
-// Fallback renderers for Feeds, Bundles, and Filters views
-function renderFeedsPage() {
-  const container = document.getElementById('feed-items-container');
-  if (container) {
-    container.innerHTML = `<div style="grid-column: 1/-1;"><h3>Managed Feeds</h3>` +
-      state.feeds.map(f => `<div style="padding: 10px; border-bottom: 1px solid #333;"><strong>${f.name}</strong> (${f.bundle}) ${f.alerts ? '🔔' : ''}</div>`).join('') +
-      `</div>`;
-  }
-}
-
-function renderBundlesPage() {
-  const container = document.getElementById('feed-items-container');
-  if (container) {
-    const bundles = [...new Set(state.feeds.map(f => f.bundle).filter(Boolean))];
-    container.innerHTML = `<div style="grid-column: 1/-1;"><h3>Feed Bundles</h3>` +
-      bundles.map(b => `<div style="padding: 10px; border-bottom: 1px solid #333;">📦 <strong>${b}</strong></div>`).join('') +
-      `</div>`;
-  }
-}
-
-function renderFiltersPage() {
-  const container = document.getElementById('feed-items-container');
-  if (container) {
-    container.innerHTML = `<div style="grid-column: 1/-1;"><h3>Active Filter Rules</h3><p>Configure feeds or bundles to edit whitelist and blacklist parameters.</p></div>`;
-  }
-}
-
-/* ==========================================================================
-   3. RSS.APP FILTERING PIPELINE
-   ========================================================================== */
-
 function passesRssAppFilters(article, filters) {
   if (!filters) return true;
-
-  const {
-    whitelist = [],
-    blacklist = [],
-    matchField = 'all',
-    matchMode = 'OR',
-    hideNoImage = false,
-    hideNoDescription = false,
-    hideOlderThanHours = 0,
-    blockedDomains = []
-  } = filters;
-
+  const { whitelist = [], blacklist = [], matchField = 'all', matchMode = 'OR' } = filters;
   const targetText = getTargetText(article, matchField).toLowerCase();
 
-  if (hideNoImage && !article.imageUrl) return false;
-  if (hideNoDescription && (!article.snippet || article.snippet.trim() === '')) return false;
-
-  if (hideOlderThanHours > 0 && article.date) {
-    const postTime = new Date(article.date).getTime();
-    const cutoff = Date.now() - (hideOlderThanHours * 60 * 60 * 1000);
-    if (postTime < cutoff) return false;
-  }
-
-  if (blockedDomains.length > 0 && article.link) {
-    if (blockedDomains.some(d => article.link.toLowerCase().includes(d.toLowerCase()))) return false;
-  }
-
-  if (blacklist.length > 0) {
-    if (blacklist.some(word => targetText.includes(word.toLowerCase().trim()))) return false;
-  }
-
+  if (blacklist.length > 0 && blacklist.some(w => w && targetText.includes(w.toLowerCase().trim()))) return false;
   if (whitelist.length > 0) {
-    if (matchMode === 'AND') {
-      if (!whitelist.every(word => targetText.includes(word.toLowerCase().trim()))) return false;
-    } else {
-      if (!whitelist.some(word => targetText.includes(word.toLowerCase().trim()))) return false;
-    }
+    if (matchMode === 'AND') return whitelist.every(w => w && targetText.includes(w.toLowerCase().trim()));
+    return whitelist.some(w => w && targetText.includes(w.toLowerCase().trim()));
   }
-
   return true;
 }
 
 function getTargetText(article, field) {
-  switch (field) {
-    case 'title': return article.title || '';
-    case 'description': return article.snippet || '';
-    case 'url': return article.link || '';
-    default: return `${article.title || ''} ${article.snippet || ''} ${article.link || ''}`;
-  }
+  if (field === 'title') return article.title || '';
+  if (field === 'description') return article.snippet || '';
+  if (field === 'url') return article.link || '';
+  return `${article.title || ''} ${article.snippet || ''} ${article.link || ''}`;
 }
 
 function cleanArticleTitle(title) {
-  if (!title) return '';
-  return title.replace(/^\[.*?\]\s*/, '').replace(/\s*-\s*[^-]+$/, '').trim();
+  return (title || '').replace(/^\[.*?\]\s*/, '').replace(/\s*-\s*[^-]+$/, '').trim();
 }
 
 /* ==========================================================================
-   4. AUTO-REFRESH & SELECTIVE ALERTS
+   5. STATE HELPERS & ALERTS
    ========================================================================== */
+
+function updateFeedFilter(feedId, key, value) {
+  const feed = state.feeds.find(f => f.id === feedId);
+  if (feed) {
+    if (!feed.filters) feed.filters = {};
+    feed.filters[key] = value.split(',').map(s => s.trim()).filter(Boolean);
+    saveState();
+  }
+}
+
+function toggleFeedAlert(feedId) {
+  const feed = state.feeds.find(f => f.id === feedId);
+  if (feed) { feed.alerts = !feed.alerts; saveState(); renderAllViews(); switchTab('feeds'); }
+}
+
+function toggleBundleAlert(bundleId) {
+  const bundle = state.bundles.find(b => b.id === bundleId);
+  if (bundle) { bundle.alerts = !bundle.alerts; saveState(); renderAllViews(); switchTab('bundles'); }
+}
+
+function saveState() {
+  localStorage.setItem('mf_feeds', JSON.stringify(state.feeds));
+  localStorage.setItem('mf_bundles', JSON.stringify(state.bundles));
+  localStorage.setItem('mf_items', JSON.stringify(state.items));
+}
 
 function setupAutoRefresh(minutes) {
   if (state.timerId) clearInterval(state.timerId);
-  if (minutes > 0) {
-    state.timerId = setInterval(() => refreshFeeds(), minutes * 60 * 1000);
-  }
+  if (minutes > 0) state.timerId = setInterval(() => refreshFeeds(), minutes * 60 * 1000);
 }
 
 async function refreshFeeds() {
-  // Simulated incoming post fetch
+  if (state.feeds.length === 0) return;
+  const activeFeed = state.feeds[0];
   const newItem = {
     id: Date.now().toString(),
-    feedId: state.feeds[0]?.id || '1',
-    title: `$RELIANCE / Market Movement Detected #${Math.floor(Math.random() * 100)}`,
-    snippet: 'Volume spike observed during current session.',
+    feedId: activeFeed.id,
+    title: `$${activeFeed.name.replace(/\s+/g, '')} / Breakout Alert #${Math.floor(Math.random() * 100)}`,
+    snippet: 'Trading volume spike and market order shift detected.',
     link: 'https://example.com',
-    source: 'Stock Feed',
+    source: activeFeed.name,
     date: new Date().toISOString()
   };
 
-  const feed = state.feeds.find(f => f.id === newItem.feedId) || {};
-  
-  if (passesRssAppFilters(newItem, feed.filters)) {
+  if (passesRssAppFilters(newItem, activeFeed.filters)) {
     state.items.unshift(newItem);
-    localStorage.setItem('mf_items', JSON.stringify(state.items));
-    renderStream();
-
-    if (feed.alerts || isImportantNews(newItem, state.settings.importantKeywords)) {
-      triggerNotification(newItem, `Alert: ${feed.name || 'MarketFeed'}`);
-    }
+    saveState();
+    if (state.activeTab === 'news') renderStream();
+    if (activeFeed.alerts) triggerNotification(newItem, `Alert: ${activeFeed.name}`);
   }
-}
-
-function isImportantNews(article, keywords) {
-  if (!keywords || keywords.length === 0) return false;
-  const combined = `${article.title || ''} ${article.snippet || ''}`.toLowerCase();
-  return keywords.some(kw => combined.includes(kw.toLowerCase().trim()));
 }
 
 function triggerNotification(article, alertTitle) {
   if (state.settings.soundEnabled) playAlertSound();
-
   if ('Notification' in window && Notification.permission === 'granted') {
-    if (navigator.serviceWorker && navigator.serviceWorker.controller) {
-      navigator.serviceWorker.controller.postMessage({
-        type: 'PUSH_NOTIFICATION',
-        title: alertTitle,
-        body: article.title,
-        url: article.link
-      });
-    } else {
-      new Notification(alertTitle, { body: article.title });
-    }
+    new Notification(alertTitle, { body: article.title });
   }
 }
 
@@ -423,19 +436,13 @@ function playAlertSound() {
     gain.connect(ctx.destination);
     osc.start();
     osc.stop(ctx.currentTime + 0.3);
-  } catch (e) {
-    console.error("Audio error:", e);
-  }
+  } catch (e) {}
 }
 
 function initServiceWorker() {
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('service-worker.js').catch(err => console.error(err));
-  }
+  if ('serviceWorker' in navigator) navigator.serviceWorker.register('service-worker.js').catch(() => {});
 }
 
 function initNotificationPermission() {
-  if ('Notification' in window && Notification.permission !== 'granted') {
-    Notification.requestPermission();
-  }
+  if ('Notification' in window && Notification.permission !== 'granted') Notification.requestPermission();
 }
