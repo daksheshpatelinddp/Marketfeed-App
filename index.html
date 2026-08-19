@@ -1,52 +1,131 @@
-<!doctype html>
-<html>
+<!DOCTYPE html>
+<html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="theme-color" content="#0b1220">
-<link rel="manifest" href="manifest.json">
-<link rel="icon" href="icon-192.png">
-<link rel="stylesheet" href="style.css">
-<title>MarketFeed</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MarketFeed - Stock RSS Creator & Reader</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="style.css">
+  <meta name="theme-color" content="#0f172a">
 </head>
 <body>
-<header><div class="logo">M</div><div><b>MarketFeed</b><small>Stock & Market News</small></div><button id="refresh">↻</button></header>
-<main>
-<div id="home" class="page active">
-  <div class="top"><div><h1>My News</h1><p id="status">Create feeds from keywords, topics or RSS URLs.</p></div><button id="newFeed">+ Create feed</button></div>
-  <input id="q" placeholder="Search saved news…">
-  <label class="toggle"><input id="unread" type="checkbox"> Unread only</label>
-  <div id="bundles" class="chips"></div>
-  <div id="articles"></div>
-</div>
-<div id="feedspage" class="page">
-  <div class="top"><div><h2>My Feeds</h2><p>Each feed keeps its own news and filter.</p></div><button id="newFeed2">+ Create feed</button></div>
-  <div id="feeds"></div>
-</div>
-<div id="bundlespage" class="page">
-  <div class="top"><div><h2>Bundles</h2><p>Each bundle combines its feeds, then applies its own filter.</p></div><button id="newBundle">+ New bundle</button></div>
-  <div id="bundleList"></div>
-</div>
-<div id="filterspage" class="page">
-  <h2>Filters</h2><p>Filters are independent for every feed and bundle.</p>
-  <div id="filterManager"></div>
-</div>
-<div id="settingspage" class="page"><h2>Settings</h2><div class="card">Cloudflare proxy<code>https://rssfeed.daksheshpatelin.workers.dev</code></div><div class="card"><button id="export">Export backup</button> <button id="reset">Reset app</button></div></div>
-</main>
-<nav><button data-p="home">⌂<small>News</small></button><button data-p="feedspage">☷<small>Feeds</small></button><button data-p="bundlespage">▦<small>Bundles</small></button><button data-p="filterspage">⚑<small>Filters</small></button></nav>
+  <!-- Header -->
+  <header class="app-header">
+    <div class="logo-container">
+      <span class="logo-icon">📈</span>
+      <h1>MarketFeed</h1>
+    </div>
+    <div class="header-actions">
+      <button id="notification-btn" class="btn btn-icon" title="Notification Settings">
+        🔔 <span id="notif-badge" class="badge hidden"></span>
+      </button>
+      <button id="refresh-now-btn" class="btn btn-secondary">🔄 Refresh</button>
+      <button id="add-feed-btn" class="btn btn-primary">+ New Feed</button>
+    </div>
+  </header>
 
-<dialog id="feedDlg"><form id="feedForm"><button type="button" class="x" onclick="document.getElementById('feedDlg').close()">×</button><h2>Create RSS feed</h2>
-<label>Feed name<input id="fname" required placeholder="e.g. Reliance News"></label>
-<label>Keyword / topic<input id="keyword" placeholder="e.g. Reliance Industries OR RIL"></label>
-<label>RSS URL (optional)<input id="url" type="url" placeholder="Paste an RSS/Atom URL"></label>
-<p>Keyword mode automatically creates a multi-source news request.</p>
-<label>Save to bundle<select id="fBundle"><option value="">No bundle</option></select></label>
-<button type="button" id="testFeed">Test feed</button> <button type="submit">Save feed</button><p id="testMsg"></p></form></dialog>
+  <!-- Main Container -->
+  <main class="app-container">
+    
+    <!-- Top Bar: rss.app Style Navigation & Filter Tabs -->
+    <nav class="rss-tab-nav">
+      <div class="tab-group">
+        <button class="tab-btn active" data-tab="all">All Feeds</button>
+        <button class="tab-btn" data-tab="bundles">📦 Bundles</button>
+        <button class="tab-btn" data-tab="filters">🔍 Saved Filters</button>
+      </div>
 
-<dialog id="bundleDlg"><form id="bundleForm"><button type="button" class="x" onclick="document.getElementById('bundleDlg').close()">×</button><h2>New bundle</h2><label>Bundle name<input id="bname" required></label><button type="submit">Create bundle</button></form></dialog>
+      <!-- Controls & Auto-Refresh Options -->
+      <div class="tab-controls">
+        <label for="auto-refresh-select" class="control-label">Auto-Refresh:</label>
+        <select id="auto-refresh-select" class="select-input">
+          <option value="0">Off</option>
+          <option value="1" selected>Every 1 Min</option>
+          <option value="5">Every 5 Mins</option>
+          <option value="15">Every 15 Mins</option>
+        </select>
+      </div>
+    </nav>
 
-<dialog id="filterDlg"><form id="filterForm"><button type="button" class="x" onclick="document.getElementById('filterDlg').close()">×</button><h2 id="filterTitle">Filter</h2><label>Include keywords<textarea id="filterWhite" placeholder="word1, word2"></textarea></label><label>Exclude keywords<textarea id="filterBlack" placeholder="word1, word2"></textarea></label><label class="toggle"><input id="filterDedupe" type="checkbox"> Remove duplicate stories</label><button type="button" id="saveFilter">Save filter</button></form></dialog>
+    <!-- Sub-Filter Bar (Search, Tickers, Sorting) -->
+    <section class="filter-bar">
+      <div class="search-box">
+        <input type="text" id="feed-search" placeholder="Search ticker, company, or keyword (e.g. $RELIANCE)...">
+      </div>
+      
+      <div class="filter-pills" id="bundle-pills-container">
+        <button class="pill-btn active" data-filter="all">All</button>
+        <!-- Dynamic Bundle and Ticker Pills will render here -->
+      </div>
 
-<div id="toast"></div><script src="app.js?v=9"></script>
+      <div class="sort-box">
+        <select id="sort-select" class="select-input">
+          <option value="newest">Newest First</option>
+          <option value="oldest">Oldest First</option>
+        </select>
+      </div>
+    </section>
+
+    <!-- Content Layout -->
+    <div class="content-grid">
+      
+      <!-- Sidebar Navigation for Feeds/Bundles -->
+      <aside class="sidebar" id="sidebar">
+        <div class="sidebar-section">
+          <h3>My Feeds</h3>
+          <ul id="feed-list" class="sidebar-list"></ul>
+        </div>
+        
+        <div class="sidebar-section">
+          <h3>My Bundles</h3>
+          <ul id="bundle-list" class="sidebar-list"></ul>
+        </div>
+      </aside>
+
+      <!-- Main Feed Items Stream -->
+      <section class="feed-stream">
+        <div id="stream-header" class="stream-header">
+          <h2 id="stream-title">All Updates</h2>
+          <span id="unread-count" class="counter">0 items</span>
+        </div>
+
+        <div id="feed-items-container" class="feed-cards-grid">
+          <!-- Feed cards dynamically injected here -->
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <!-- Modal: Add/Edit Feed & Bundle Alerts -->
+  <div id="feed-modal" class="modal hidden">
+    <div class="modal-content">
+      <span class="close-modal">&times;</span>
+      <h3 id="modal-title">Add Stock RSS Feed</h3>
+      <form id="feed-form">
+        <div class="form-group">
+          <label>Feed Name / Ticker</label>
+          <input type="text" id="feed-name-input" placeholder="e.g. Nifty 50 News" required>
+        </div>
+        <div class="form-group">
+          <label>URL / Source Query</label>
+          <input type="url" id="feed-url-input" placeholder="https://..." required>
+        </div>
+        <div class="form-group">
+          <label>Assign to Bundle</label>
+          <input type="text" id="feed-bundle-input" placeholder="e.g. Banking, Stocks, Crypto">
+        </div>
+        <div class="form-group checkbox-group">
+          <label>
+            <input type="checkbox" id="feed-alert-toggle" checked>
+            Send Mobile Alert on New Posts
+          </label>
+        </div>
+        <button type="submit" class="btn btn-primary full-width">Save Feed</button>
+      </form>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
 </body>
 </html>
