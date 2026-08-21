@@ -9,44 +9,401 @@
 <link rel="stylesheet" href="style.css">
 <title>MarketFeed</title>
 </head>
+
 <body>
-<header><div class="logo">M</div><div><b>MarketFeed</b><small>Stock & Market News</small></div><button id="refresh">↻</button></header>
+
+<header>
+  <div class="logo">M</div>
+
+  <div>
+    <b>MarketFeed</b>
+    <small>Stock & Market News</small>
+  </div>
+
+  <button id="refresh">↻</button>
+</header>
+
+
 <main>
+
+<!-- NEWS -->
+
 <div id="home" class="page active">
-  <div class="top"><div><h1>My News</h1><p id="status">Create feeds from keywords, topics or RSS URLs.</p></div><button id="newFeed">+ Create feed</button></div>
-  <input id="q" placeholder="Search saved news…">
-  <label class="toggle"><input id="unread" type="checkbox"> Unread only</label>
-  <div id="bundles" class="chips"></div>
+
+  <div class="top">
+
+    <div>
+      <h1>My News</h1>
+      <p id="status">
+        Create feeds from keywords,
+        topics or RSS URLs.
+      </p>
+    </div>
+
+    <button id="newFeed">
+      + Create feed
+    </button>
+
+  </div>
+
+  <input
+    id="q"
+    placeholder="Search saved news…"
+  >
+
+  <label class="toggle">
+    <input
+      id="unread"
+      type="checkbox"
+    >
+    Unread only
+  </label>
+
+  <div
+    id="bundles"
+    class="chips"
+  ></div>
+
   <div id="articles"></div>
+
 </div>
+
+
+<!-- FEEDS -->
+
 <div id="feedspage" class="page">
-  <div class="top"><div><h2>My Feeds</h2><p>Each feed keeps its own news and filter.</p></div><button id="newFeed2">+ Create feed</button></div>
+
+  <div class="top">
+
+    <div>
+      <h2>My Feeds</h2>
+
+      <p>
+        Each feed keeps its own
+        news, filter and alert setting.
+      </p>
+    </div>
+
+    <button id="newFeed2">
+      + Create feed
+    </button>
+
+  </div>
+
   <div id="feeds"></div>
+
 </div>
+
+
+<!-- BUNDLES -->
+
 <div id="bundlespage" class="page">
-  <div class="top"><div><h2>Bundles</h2><p>Each bundle combines its feeds, then applies its own filter.</p></div><button id="newBundle">+ New bundle</button></div>
+
+  <div class="top">
+
+    <div>
+      <h2>Bundles</h2>
+
+      <p>
+        Each bundle combines its feeds,
+        then applies its own filter and
+        alert setting.
+      </p>
+    </div>
+
+    <button id="newBundle">
+      + New bundle
+    </button>
+
+  </div>
+
   <div id="bundleList"></div>
+
 </div>
+
+
+<!-- FILTERS -->
+
 <div id="filterspage" class="page">
-  <h2>Filters</h2><p>Filters are independent for every feed and bundle.</p>
+
+  <h2>Filters</h2>
+
+  <p>
+    Filters are independent for every
+    feed and bundle.
+  </p>
+
   <div id="filterManager"></div>
+
 </div>
-<div id="settingspage" class="page"><h2>Settings</h2><div class="card">Cloudflare proxy<code>https://rssfeed.daksheshpatelin.workers.dev</code></div><div class="card"><button id="export">Export backup</button> <button id="reset">Reset app</button></div></div>
+
+
+<!-- SETTINGS -->
+
+<div id="settingspage" class="page">
+
+  <h2>Settings</h2>
+
+  <div class="card">
+
+    <b>Cloudflare proxy</b>
+
+    <code>
+      https://rssfeed.daksheshpatelin.workers.dev
+    </code>
+
+  </div>
+
+  <div class="card">
+
+    <b>News alerts</b>
+
+    <p>
+      Alerts are selected individually
+      on feeds and bundles.
+    </p>
+
+    <p class="small-text">
+      🔔 ON means that feed or bundle
+      is eligible for future new-story
+      notifications.
+    </p>
+
+    <p class="small-text">
+      🔕 OFF means it will not generate
+      notifications.
+    </p>
+
+    <p class="small-text">
+      Notification delivery will be
+      connected after the monitoring
+      backend is configured.
+    </p>
+
+  </div>
+
+  <div class="card">
+
+    <button id="export">
+      Export backup
+    </button>
+
+    <button id="reset">
+      Reset app
+    </button>
+
+  </div>
+
+</div>
+
 </main>
-<nav><button data-p="home">⌂<small>News</small></button><button data-p="feedspage">☷<small>Feeds</small></button><button data-p="bundlespage">▦<small>Bundles</small></button><button data-p="filterspage">⚑<small>Filters</small></button></nav>
 
-<dialog id="feedDlg"><form id="feedForm"><button type="button" class="x" onclick="document.getElementById('feedDlg').close()">×</button><h2>Create RSS feed</h2>
-<label>Feed name<input id="fname" required placeholder="e.g. Reliance News"></label>
-<label>Keyword / topic<input id="keyword" placeholder="e.g. Reliance Industries OR RIL"></label>
-<label>RSS URL (optional)<input id="url" type="url" placeholder="Paste an RSS/Atom URL"></label>
-<p>Keyword mode automatically creates a multi-source news request.</p>
-<label>Save to bundle<select id="fBundle"><option value="">No bundle</option></select></label>
-<button type="button" id="testFeed">Test feed</button> <button type="submit">Save feed</button><p id="testMsg"></p></form></dialog>
 
-<dialog id="bundleDlg"><form id="bundleForm"><button type="button" class="x" onclick="document.getElementById('bundleDlg').close()">×</button><h2>New bundle</h2><label>Bundle name<input id="bname" required></label><button type="submit">Create bundle</button></form></dialog>
+<!-- NAVIGATION -->
 
-<dialog id="filterDlg"><form id="filterForm"><button type="button" class="x" onclick="document.getElementById('filterDlg').close()">×</button><h2 id="filterTitle">Filter</h2><label>Include keywords<textarea id="filterWhite" placeholder="word1, word2"></textarea></label><label>Exclude keywords<textarea id="filterBlack" placeholder="word1, word2"></textarea></label><label class="toggle"><input id="filterDedupe" type="checkbox"> Remove duplicate stories</label><button type="button" id="saveFilter">Save filter</button></form></dialog>
+<nav>
 
-<div id="toast"></div><script src="app.js?v=9"></script>
+  <button data-p="home">
+    ⌂
+    <small>News</small>
+  </button>
+
+  <button data-p="feedspage">
+    ☷
+    <small>Feeds</small>
+  </button>
+
+  <button data-p="bundlespage">
+    ▦
+    <small>Bundles</small>
+  </button>
+
+  <button data-p="filterspage">
+    ⚑
+    <small>Filters</small>
+  </button>
+
+</nav>
+
+
+<!-- CREATE FEED -->
+
+<dialog id="feedDlg">
+
+<form id="feedForm">
+
+  <button
+    type="button"
+    class="x"
+    onclick="document.getElementById('feedDlg').close()"
+  >
+    ×
+  </button>
+
+  <h2>Create RSS feed</h2>
+
+  <label>
+    Feed name
+
+    <input
+      id="fname"
+      required
+      placeholder="e.g. Reliance News"
+    >
+  </label>
+
+  <label>
+    Keyword / topic
+
+    <input
+      id="keyword"
+      placeholder="e.g. Reliance Industries OR RIL"
+    >
+  </label>
+
+  <label>
+    RSS URL (optional)
+
+    <input
+      id="url"
+      type="url"
+      placeholder="Paste an RSS/Atom URL"
+    >
+  </label>
+
+  <p>
+    Keyword mode automatically creates
+    a multi-source news request.
+  </p>
+
+  <label>
+    Save to bundle
+
+    <select id="fBundle">
+      <option value="">
+        No bundle
+      </option>
+    </select>
+
+  </label>
+
+  <button
+    type="button"
+    id="testFeed"
+  >
+    Test feed
+  </button>
+
+  <button type="submit">
+    Save feed
+  </button>
+
+  <p id="testMsg"></p>
+
+</form>
+
+</dialog>
+
+
+<!-- CREATE BUNDLE -->
+
+<dialog id="bundleDlg">
+
+<form id="bundleForm">
+
+  <button
+    type="button"
+    class="x"
+    onclick="document.getElementById('bundleDlg').close()"
+  >
+    ×
+  </button>
+
+  <h2>New bundle</h2>
+
+  <label>
+    Bundle name
+
+    <input
+      id="bname"
+      required
+    >
+  </label>
+
+  <button type="submit">
+    Create bundle
+  </button>
+
+</form>
+
+</dialog>
+
+
+<!-- FILTER -->
+
+<dialog id="filterDlg">
+
+<form id="filterForm">
+
+  <button
+    type="button"
+    class="x"
+    onclick="document.getElementById('filterDlg').close()"
+  >
+    ×
+  </button>
+
+  <h2 id="filterTitle">
+    Filter
+  </h2>
+
+  <label>
+    Include keywords
+
+    <textarea
+      id="filterWhite"
+      placeholder="word1, word2"
+    ></textarea>
+
+  </label>
+
+  <label>
+    Exclude keywords
+
+    <textarea
+      id="filterBlack"
+      placeholder="word1, word2"
+    ></textarea>
+
+  </label>
+
+  <label class="toggle">
+
+    <input
+      id="filterDedupe"
+      type="checkbox"
+    >
+
+    Remove duplicate stories
+
+  </label>
+
+  <button
+    type="button"
+    id="saveFilter"
+  >
+    Save filter
+  </button>
+
+</form>
+
+</dialog>
+
+
+<div id="toast"></div>
+
+
+<script src="app.js?v=10"></script>
+
 </body>
 </html>
