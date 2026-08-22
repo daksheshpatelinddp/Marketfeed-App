@@ -1,0 +1,412 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport"
+ content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#0b1220">
+<link rel="manifest" href="manifest.json">
+<link rel="stylesheet" href="style.css">
+<title>MarketFeed</title>
+</head>
+
+<body>
+
+<header>
+ <div class="logo">M</div>
+ <div>
+  <b>MarketFeed</b>
+  <small>Stock & Market News</small>
+ </div>
+ <button id="refresh">↻</button>
+</header>
+
+<main>
+
+<section id="home" class="page active">
+ <div class="top">
+  <div>
+   <h1>My News</h1>
+   <p id="status">My News</p>
+  </div>
+  <button id="newFeed">+ Create feed</button>
+ </div>
+
+ <input id="q"
+  placeholder="Search saved news…">
+
+ <label class="toggle">
+  <input id="unread" type="checkbox">
+  Unread only
+ </label>
+
+ <div id="articles"></div>
+</section>
+
+
+<section id="feedspage" class="page">
+ <div class="top">
+  <div>
+   <h2>Feeds</h2>
+   <p>Select a feed to see its news.</p>
+  </div>
+
+  <button id="newFeed2">
+   + Create feed
+  </button>
+ </div>
+
+ <div id="feeds"></div>
+</section>
+
+
+<section id="bundlespage" class="page">
+ <div class="top">
+  <div>
+   <h2>Bundles</h2>
+   <p>Select a bundle to see its news.</p>
+  </div>
+
+  <button id="newBundle">
+   + New bundle
+  </button>
+ </div>
+
+ <div id="bundleList"></div>
+</section>
+
+
+<section id="filterspage" class="page">
+ <h2>Filters</h2>
+ <p>
+  Filters are separate for every feed
+  and every bundle.
+ </p>
+
+ <div id="filterManager"></div>
+</section>
+
+
+<section id="settingspage" class="page">
+ <h2>Settings</h2>
+
+ <div class="card">
+  <button id="export">Export backup</button>
+  <button id="reset">Reset app</button>
+ </div>
+</section>
+
+</main>
+
+
+<nav>
+ <button data-p="home">
+  ⌂<small>News</small>
+ </button>
+
+ <button data-p="feedspage">
+  ☷<small>Feeds</small>
+ </button>
+
+ <button data-p="bundlespage">
+  ▦<small>Bundles</small>
+ </button>
+
+ <button data-p="filterspage">
+  ⚑<small>Filters</small>
+ </button>
+
+ <button data-p="settingspage">
+  ⚙<small>Settings</small>
+ </button>
+</nav>
+
+
+<dialog id="feedDlg">
+<form id="feedForm">
+
+<button type="button" class="x"
+ onclick="feedDlg.close()">×</button>
+
+<h2>Create RSS feed</h2>
+
+<label>
+ Feed name
+ <input id="fname"
+  placeholder="Feed name">
+</label>
+
+<label>
+ Keyword / topic
+ <input id="keyword"
+  placeholder="Keyword or topic">
+</label>
+
+<label>
+ RSS URL
+ <input id="url"
+  type="url"
+  placeholder="Paste RSS/Atom URL">
+</label>
+
+<label>
+ Save to bundle
+ <select id="fBundle"></select>
+</label>
+
+<button type="submit">
+ Save feed
+</button>
+
+</form>
+</dialog>
+
+
+<dialog id="bundleDlg">
+<form id="bundleForm">
+
+<button type="button" class="x"
+ onclick="bundleDlg.close()">×</button>
+
+<h2>New bundle</h2>
+
+<label>
+ Bundle name
+ <input id="bname" required>
+</label>
+
+<button type="submit">
+ Create bundle
+</button>
+
+</form>
+</dialog>
+
+
+<dialog id="assignDlg">
+<form>
+
+<button type="button" class="x"
+ onclick="assignDlg.close()">×</button>
+
+<h2 id="assignTitle">
+ Bundle membership
+</h2>
+
+<div id="assignList"></div>
+
+<button type="button"
+ id="saveAssignments">
+ Save
+</button>
+
+</form>
+</dialog>
+
+
+<dialog id="filterDlg">
+<form>
+
+<button type="button" class="x"
+ onclick="filterDlg.close()">×</button>
+
+<h2 id="filterTitle">
+ Filters
+</h2>
+
+
+<fieldset>
+<legend>Whitelist</legend>
+
+<textarea id="filterWhite"
+ placeholder="Add keyword or phrase, one per line"></textarea>
+
+<p>Apply to:</p>
+
+<label>
+<input type="checkbox"
+ data-whiteField="title" checked>
+ Title
+</label>
+
+<label>
+<input type="checkbox"
+ data-whiteField="description" checked>
+ Description
+</label>
+
+<label>
+<input type="checkbox"
+ data-whiteField="url">
+ URL
+</label>
+
+<label>
+<input type="checkbox"
+ data-whiteField="image">
+ Image URL
+</label>
+
+<label>
+<input type="checkbox"
+ id="whitePartial" checked>
+ Partial match
+</label>
+
+<label>
+<input type="checkbox"
+ id="whiteAnd">
+ AND condition
+</label>
+
+</fieldset>
+
+
+<fieldset>
+<legend>Blacklist</legend>
+
+<textarea id="filterBlack"
+ placeholder="Add keyword or phrase, one per line"></textarea>
+
+<p>Apply to:</p>
+
+<label>
+<input type="checkbox"
+ data-blackField="title" checked>
+ Title
+</label>
+
+<label>
+<input type="checkbox"
+ data-blackField="description" checked>
+ Description
+</label>
+
+<label>
+<input type="checkbox"
+ data-blackField="url">
+ URL
+</label>
+
+<label>
+<input type="checkbox"
+ data-blackField="image">
+ Image URL
+</label>
+
+<label>
+<input type="checkbox"
+ id="blackPartial" checked>
+ Partial match
+</label>
+
+<label>
+<input type="checkbox"
+ id="blackAnd">
+ AND condition
+</label>
+
+</fieldset>
+
+
+<fieldset>
+<legend>Auto-hide</legend>
+
+<label>
+<input type="checkbox" id="noImage">
+ No image
+</label>
+
+<label>
+<input type="checkbox" id="noDescription">
+ No description
+</label>
+
+<label>
+<input type="checkbox" id="noDate">
+ No date
+</label>
+
+<label>
+<input type="checkbox" id="noSecure">
+ No secure HTTPS link
+</label>
+
+<label>
+<input type="checkbox" id="duplicateTitle">
+ Duplicate titles
+</label>
+
+<label>
+<input type="checkbox"
+ id="duplicateDescription">
+ Duplicate descriptions
+</label>
+
+<label>
+<input type="checkbox" id="similarTitle">
+ Similar titles
+</label>
+
+</fieldset>
+
+
+<fieldset>
+<legend>Hide older posts</legend>
+
+<label>
+<input type="checkbox"
+ id="olderEnabled">
+ Enable
+</label>
+
+<input id="olderAmount"
+ type="number"
+ min="1"
+ value="24">
+
+<select id="olderUnit">
+ <option value="hours">Hours</option>
+ <option value="days">Days</option>
+</select>
+
+</fieldset>
+
+
+<fieldset>
+<legend>Domain blocking</legend>
+
+<textarea id="domains"
+ placeholder="example.com&#10;another.com"></textarea>
+
+</fieldset>
+
+
+<fieldset>
+<legend>Clean title</legend>
+
+<label>
+<input type="checkbox"
+ id="cleanTitle">
+ Enable clean title
+</label>
+
+<textarea id="cleanTerms"
+ placeholder="Terms to remove, one per line"></textarea>
+
+</fieldset>
+
+
+<button type="button"
+ id="saveFilter">
+ Save filter
+</button>
+
+</form>
+</dialog>
+
+
+<script src="app.js?v=9"></script>
+
+</body>
+</html>
